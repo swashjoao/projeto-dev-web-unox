@@ -33,10 +33,11 @@ const TaskList = () => {
         const fetchTasks = async () => {
             try {
                 setLoading(true);
-                const data = await taskService.getAllTasks();
+                const data = await taskService.getAll();
                 setTasks(data);
             } catch (error) {
                 console.error('Erro ao carregar tarefas:', error);
+                setError('Erro ao carregar tarefas. Tente novamente.');
             } finally {
                 setLoading(false);
             }

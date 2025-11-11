@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Container, Typography, Button, CircularProgress, Alert } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
+import taskService from '../../services/taskService';
 import TaskForm from './TaskForm';
 import api from '../../services/api';
 
@@ -34,22 +34,19 @@ const NewTaskPage = () => {
     }, []);
 
     const handleSubmit = async (formData) => {
+        console.log('Dados do formulário:', formData);
         try {
-            setLoading(true);
-            // Format the date to ISO string
-            const taskData = {
+            const dataToSend = {
                 ...formData,
-                dataVencimento: formData.dataVencimento ? formData.dataVencimento.toISOString() : null,
+                dataVencimento: formData.dataVencimento ? new Date(formData.dataVencimento).toISOString() : null
             };
 
-            console.log('Enviando tarefa:', taskData);
-            await api.post('/tarefas', taskData);
-            navigate('/tasks'); // Redirect to tasks list after successful creation
-        } catch (err) {
-            console.error('Erro ao criar tarefa:', err);
-            setError('Erro ao criar tarefa. Por favor, verifique os dados e tente novamente.');
-        } finally {
-            setLoading(false);
+            console.log('Enviando tarefa:', dataToSend);
+            await taskService.create(dataToSend);
+            navigate('/tasks');
+        } catch (error) {
+            console.error('Erro ao criar tarefa:', error);
+            setError('Erro ao criar tarefa. Por favor, tente novamente.');
         }
     };
 
