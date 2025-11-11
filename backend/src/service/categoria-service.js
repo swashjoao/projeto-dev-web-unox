@@ -1,49 +1,66 @@
-const categoriaRepository = require("../repository/categoria-repository.js");
+import {
+    getById,
+    remover,
+    getCategoriaDefault,
+    getByNome as repoGetByNome,
+    getProximoID,
+    salvar,
+    atualizar,
+    getAll as repoGetAll
+} from "../repository/categoria-repository.js";
 
-exports.createCategoria = (nome, descricao) => {
-    // Verifica se já existe uma categoria com esse nome
-    const categoriaExistente = categoriaRepository.getByNome(nome);
-    if(categoriaExistente){
-        return { error: "Categoria já existe" };
+const createCategoria = (nome, descricao) => {
+    const categoriaExistente = repoGetByNome(nome);
+    if (categoriaExistente) {
+        throw new Error('Já existe uma categoria com este nome');
     }
-    
-    const categoria = {
-        id: categoriaRepository.getProximoID(), 
-        nome: nome, 
-        descricao: descricao || ""
+
+    const novaCategoria = {
+        id: getProximoID(),
+        nome,
+        descricao
     };
-    categoriaRepository.insert(categoria);
-    return categoria;
+
+    return salvar(novaCategoria);
 };
 
-exports.getAll = () => {
-    return categoriaRepository.getAll();
+const getAll = () => {
+    return repoGetAll();
 };
 
-exports.getById = (id) => {
-    return categoriaRepository.getById(id);
+const getByNome = (nome) => {
+    return repoGetByNome(nome);
 };
 
-exports.getByNome = (nome) => {
-    return categoriaRepository.getByNome(nome);
-};
-
-exports.update = (id, nome, descricao) => {
-    return categoriaRepository.update(id, nome, descricao);
-};
-
-exports.updateFull = (id, nome, descricao) => {
-    return categoriaRepository.updateFull(id, nome, descricao);
-};
-
-exports.delete = (id) => {
-    // Não permite deletar a categoria padrão "SEM CATEGORIA"
-    if(id === 1){
-        return { error: "Não é possível deletar a categoria padrão" };
+const update = (id, { nome, descricao }) => {
+    const categoriaExistente = getById(id);
+    if (!categoriaExistente) {
+        throw new Error('Categoria não encontrada');
     }
-    return categoriaRepository.delete(id);
+
+    // Verifica se já existe outra categoria com o mesmo nome
+    if (nome && nome !== categoriaExistente.nome) {
+        const categoriaComMesmoNome = getByNome(nome);
+        if (categoriaComMesmoNome) {
+            throw new Error('Já existe uma categoria com este nome');
+        }
+    }
+
+    const categoriaAtualizada = {
+        ...categoriaExistente,
+        nome: nome || categoriaExistente.nome,
+        descricao: descricao !== undefined ? descricao : categoriaExistente.descricao
+    };
+
+    return atualizar(categoriaAtualizada);
 };
 
-exports.getCategoriaDefault = () => {
-    return categoriaRepository.getById(1); // "SEM CATEGORIA"
+export {
+    createCategoria,
+    getAll,
+    getById,
+    getByNome,
+    update,
+    remover,
+    getCategoriaDefault
 };

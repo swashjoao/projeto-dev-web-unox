@@ -1,56 +1,55 @@
 let repository = [
-    {id: 1, nome: 'SEM CATEGORIA', descricao: 'Categoria padrão para tarefas sem categoria específica'}
+    {
+        id: 1,
+        nome: "Sem Categoria",
+        descricao: "Categoria padrão para itens sem classificação"
+    }
 ];
 let proximoID = 2;
 
-exports.insert = (categoria) => {
+export const salvar = (categoria) => {
     repository.push(categoria);
+    return categoria;
 };
 
-exports.getAll = () => {
-    return repository;
+export const getAll = () => {
+    return [...repository];
 };
 
-exports.getById = (id) => {
+export const getById = (id) => {
     return repository.find(c => c.id === id);
 };
 
-exports.getByNome = (nome) => {
+export const getByNome = (nome) => {
     return repository.find(c => c.nome.toLowerCase() === nome.toLowerCase());
 };
 
-exports.update = (id, nome, descricao) => {
-    const categoria = this.getById(id);
-    if(categoria){
-        categoria.nome = nome;
-        categoria.descricao = descricao;
+export const atualizar = (categoriaAtualizada) => {
+    const index = repository.findIndex(c => c.id === categoriaAtualizada.id);
+    if (index !== -1) {
+        repository[index] = { ...repository[index], ...categoriaAtualizada };
+        return repository[index];
     }
-    return categoria;
+    return null;
 };
 
-exports.updateFull = (id, nome, descricao) => {
-    const categoria = this.getById(id);
-    if(categoria){
-        categoria.nome = nome;
-        categoria.descricao = descricao;
-        
-        const index = repository.findIndex(c => c.id === id);
-        if (index !== -1) {
-            repository[index] = categoria;
-        }
+export const remover = (id) => {
+    // Não permite remover a categoria padrão
+    if (id === 1) {
+        return { error: "Não é possível remover a categoria padrão" };
     }
-    return categoria;
-};
-
-exports.delete = (id) => {
+    
     const index = repository.findIndex(c => c.id === id);
-    if(index !== -1){
+    if (index !== -1) {
         repository.splice(index, 1);
         return true;
     }
     return false;
 };
 
-exports.getProximoID = () => {
+export const getProximoID = () => {
     return proximoID++;
 };
+
+export const getCategoriaDefault = () => getById(1);
+

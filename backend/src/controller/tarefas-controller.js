@@ -1,79 +1,84 @@
-const tarefasService = require("../service/tarefas-services.js");
-let proximoID=2;
+import * as tarefasService from "../service/tarefas-service.js";
 
-exports.CreateTarefas = (req, res) => {
+let proximoID = 2;
+
+export const CreateTarefas = (req, res) => {
     const { nome, categoriaId } = req.body;
     
-    if(!nome){
+    if(!nome) {
         return res.status(400).json({message: 'Nome é obrigatório'});
     }
     
     const tarefa = tarefasService.createTarefas(nome, categoriaId);
     
-    if(tarefa.error){
+    if(tarefa.error) {
         return res.status(400).json({message: tarefa.error});
     }
     
     res.status(201).json(tarefa);
 };
 
-exports.getAll = (req, res) =>{ 
-    const tarefas = tarefasService.getAll(req, res);
-    res.status(201).json(tarefas);
+export const getAll = (req, res) => {
+    const tarefas = tarefasService.getAll();
+    res.json(tarefas);
 };
 
-exports.getById = (req, res) =>{
-    const id = parseInt(req.params.id);
-    const tarefa = tarefasService.getById(id);
-    if(!tarefa){
-        return res.status(404).json({message: 'Tarefa não encontrada'});
-    }
-    res.status(201).json(tarefa);
-}
-
-exports.update = (req, res) => {
-    const id = parseInt(req.params.id);
-    const { categoriaId } = req.body;
-    const tarefa = tarefasService.getById(id);
-    if(!tarefa){
-        return res.status(404).json({message: 'Tarefa não encontrada'});
-    }
-    if (categoriaId) {
-        const categoriaService = require("../service/categoria-service.js");
-        const categoria = categoriaService.getById(categoriaId);
-        if(!categoria){
-            return res.status(400).json({message: 'Categoria não encontrada'});
-        }
-        tarefa.categoriaId = categoriaId;
-        tarefa.categoria = categoria.nome;
-    }
-    res.status(200).json(tarefa);
-};
-
-exports.updateFull = (req, res) =>{
-    const id = parseInt(req.params.id);
-    let tarefa;
-    tarefa = tarefasService.getById(id);
-    if(!tarefa){
-        return res.status(404).json({message: 'Tarefa não encontrada'});
-    }
-    const { nome, categoria } = req.body;
-
-    if(!nome){
-        return res.status(400).json({message: 'Nome é obrigatório'});
+export const getById = (req, res) => {
+    const { id } = req.params;
+    const tarefa = tarefasService.getById(parseInt(id));
+    
+    if (!tarefa) {
+        return res.status(404).json({ message: 'Tarefa não encontrada' });
     }
     
-    const { categoriaId } = req.body;
-    tarefa = tarefasService.updateFull(id, nome, categoriaId);
-    res.status(200).json({message: 'Tarefa atualizada totalmente com sucesso', tarefa});
+    res.json(tarefa);
+};
 
-}
-exports.delete = (req, res) =>{
-    const id = parseInt(req.params.id);
-    const sucess = tarefasService.delete(id);
-
-    if (sucess){
-        return res.status(404).json({message: 'Usuario não encontrado'});
+export const update = (req, res) => {
+    const { id } = req.params;
+    const { nome, concluida, categoriaId } = req.body;
+    
+    const tarefaAtualizada = tarefasService.update(parseInt(id), { nome, concluida, categoriaId });
+    
+    if (tarefaAtualizada.error) {
+        return res.status(400).json({ message: tarefaAtualizada.error });
     }
-    res.status(200).json({message: 'Tarefa deletada com sucesso'});
+    
+    if (!tarefaAtualizada) {
+        return res.status(404).json({ message: 'Tarefa não encontrada' });
+    }
+    
+    res.json(tarefaAtualizada);
+};
+
+export const updateFull = (req, res) => {
+    const { id } = req.params;
+    const { nome, concluida, categoriaId } = req.body;
+    
+    if (!nome) {
+        return res.status(400).json({ message: 'Nome é obrigatório' });
+    }
+    
+    const tarefaAtualizada = tarefasService.updateFull(parseInt(id), { 
+        nome, 
+        concluida: concluida || false, 
+        categoriaId 
+    });
+    
+    if (tarefaAtualizada.error) {
+        return res.status(400).json({ message: tarefaAtualizada.error });
+    }
+    
+    res.json(tarefaAtualizada);
+};
+
+export const deleteTarefa = (req, res) => {
+    const { id } = req.params;
+    const sucesso = tarefasService.deleteTarefa(parseInt(id));
+    
+    if (!sucesso) {
+        return res.status(404).json({ message: 'Tarefa não encontrada' });
+    }
+    
+    res.status(204).send();
 };

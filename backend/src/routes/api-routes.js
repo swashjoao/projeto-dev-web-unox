@@ -1,9 +1,10 @@
-const express = require('express');
+import express from 'express';
+import tarefasRoutes from './tarefas-routes.js';
+import categoriaRoutes from './categoria-routes.js';
+
 const router = express.Router();
-const tarefasRoutes = require('./tarefas-routes');
-const categoriaRoutes = require('./categoria-routes');
 
 router.use('/', tarefasRoutes);
 router.use('/', categoriaRoutes);
 
-module.exports = router;
+export default router;

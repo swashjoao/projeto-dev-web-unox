@@ -1,81 +1,81 @@
-const categoriaService = require("../service/categoria-service.js");
+import * as categoriaService from "../service/categoria-service.js";
 
-exports.CreateCategoria = (req, res) => {
+export const CreateCategoria = (req, res) => {
     const { nome, descricao } = req.body;
     
-    if(!nome){
-        return res.status(400).json({message: 'Nome é obrigatório'});
+    if (!nome) {
+        return res.status(400).json({ message: 'Nome é obrigatório' });
     }
     
     const categoria = categoriaService.createCategoria(nome, descricao);
     
-    if(categoria.error){
-        return res.status(400).json({message: categoria.error});
+    if (categoria.error) {
+        return res.status(400).json({ message: categoria.error });
     }
     
     res.status(201).json(categoria);
 };
 
-exports.getAll = (req, res) => { 
+export const getAll = (req, res) => {
     const categorias = categoriaService.getAll();
-    res.status(200).json(categorias);
+    res.json(categorias);
 };
 
-exports.getById = (req, res) => {
-    const id = parseInt(req.params.id);
-    const categoria = categoriaService.getById(id);
-    if(!categoria){
-        return res.status(404).json({message: 'Categoria não encontrada'});
+export const getById = (req, res) => {
+    const { id } = req.params;
+    const categoria = categoriaService.getById(parseInt(id));
+    
+    if (!categoria) {
+        return res.status(404).json({ message: 'Categoria não encontrada' });
     }
-    res.status(200).json(categoria);
+    
+    res.json(categoria);
 };
 
-exports.update = (req, res) => {
-    const id = parseInt(req.params.id);
+export const update = (req, res) => {
+    const { id } = req.params;
     const { nome, descricao } = req.body;
-    const categoria = categoriaService.getById(id);
-    if(!categoria){
-        return res.status(404).json({message: 'Categoria não encontrada'});
+    
+    const categoriaAtualizada = categoriaService.update(parseInt(id), { nome, descricao });
+    
+    if (categoriaAtualizada.error) {
+        return res.status(400).json({ message: categoriaAtualizada.error });
     }
     
-    if (nome) {
-        categoria.nome = nome;
-    }
-    if (descricao) {
-        categoria.descricao = descricao;
+    if (!categoriaAtualizada) {
+        return res.status(404).json({ message: 'Categoria não encontrada' });
     }
     
-    res.status(200).json(categoria);
+    res.json(categoriaAtualizada);
 };
 
-exports.updateFull = (req, res) => {
-    const id = parseInt(req.params.id);
-    let categoria;
-    categoria = categoriaService.getById(id);
-    if(!categoria){
-        return res.status(404).json({message: 'Categoria não encontrada'});
-    }
+export const updateFull = (req, res) => {
+    const { id } = req.params;
     const { nome, descricao } = req.body;
-
-    if(!nome){
-        return res.status(400).json({message: 'Nome é obrigatório'});
+    
+    if (!nome) {
+        return res.status(400).json({ message: 'Nome é obrigatório' });
     }
     
-    categoria = categoriaService.updateFull(id, nome, descricao);
-    res.status(200).json({message: 'Categoria atualizada totalmente com sucesso', categoria});
+    const categoriaAtualizada = categoriaService.updateFull(parseInt(id), { 
+        nome, 
+        descricao: descricao || '' 
+    });
+    
+    if (categoriaAtualizada.error) {
+        return res.status(400).json({ message: categoriaAtualizada.error });
+    }
+    
+    res.json(categoriaAtualizada);
 };
 
-exports.delete = (req, res) => {
-    const id = parseInt(req.params.id);
-    const result = categoriaService.delete(id);
-
-    if (result.error){
-        return res.status(400).json({message: result.error});
+export const deleteCategoria = (req, res) => {
+    const { id } = req.params;
+    const sucesso = categoriaService.deleteCategoria(parseInt(id));
+    
+    if (!sucesso) {
+        return res.status(404).json({ message: 'Categoria não encontrada' });
     }
     
-    if (!result){
-        return res.status(404).json({message: 'Categoria não encontrada'});
-    }
-    
-    res.status(200).json({message: 'Categoria deletada com sucesso'});
+    res.status(204).send();
 };

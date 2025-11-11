@@ -1,46 +1,51 @@
-let repository = [
-    {id: 0, nome: 'trabalho de casa', categoriaId: 1, categoria: 'SEM CATEGORIA'},
-    {id: 1, nome: 'user', categoriaId: 1, categoria: 'SEM CATEGORIA'}
-]
-let proximoID=2;
+export const repository = [
+    { 
+        id: 0, 
+        nome: 'trabalho de casa', 
+        categoriaId: 1, 
+        categoria: 'SEM CATEGORIA',
+        concluida: false,
+        dataCriacao: new Date().toISOString()
+    },
+    { 
+        id: 1, 
+        nome: 'user', 
+        categoriaId: 1, 
+        categoria: 'SEM CATEGORIA',
+        concluida: false,
+        dataCriacao: new Date().toISOString()
+    }
+];
 
-    exports.insert = (tarefa) =>{
-        repository.push(tarefa);
-    }
-    exports.getAll = () =>{
-        return repository;
-    }
-    exports.getById = (id) => {
-        return repository.find(t => t.id === id);
-    }
-    exports.update = (id, nome, categoriaId, categoria) => {
-        const tarefa = this.getById(id);
-        if(tarefa){
-            if(nome) tarefa.nome = nome;
-            if(categoriaId) tarefa.categoriaId = categoriaId;
-            if(categoria) tarefa.categoria = categoria;
-        }
-        return tarefa;
-    }  
-    exports.updateFull = (id, nome, categoriaId, categoria) => {
-        const tarefa = this.getById(id);
-        if(tarefa){
-            tarefa.nome = nome;
-            tarefa.categoriaId = categoriaId;
-            tarefa.categoria = categoria;
+export let proximoID = 2;
 
-            const index = repository.findIndex(t => t.id === id);
-            if (index !== -1) {
-                repository[index] = tarefa;
-            }
-        }
-        return tarefa;
+export const salvar = (tarefa) => {
+    repository.push(tarefa);
+    return tarefa;
+};
+
+export const listarTodas = () => {
+    return [...repository];
+};
+
+export const buscarPorId = (id) => {
+    return repository.find(t => t.id === id);
+};
+
+export const atualizar = (tarefaAtualizada) => {
+    const index = repository.findIndex(t => t.id === tarefaAtualizada.id);
+    if (index !== -1) {
+        repository[index] = { ...repository[index], ...tarefaAtualizada };
+        return repository[index];
     }
-    exports.delete = (id) => {
-        const index = repository.findIndex(t => t.id === id);
-        if(index !== -1){
-            repository.splice(index, 1);
-            return true;
-        }
-        return false;
-    };
+    return null;
+};
+
+export const remover = (id) => {
+    const index = repository.findIndex(t => t.id === id);
+    if (index !== -1) {
+        repository.splice(index, 1);
+        return true;
+    }
+    return false;
+};
