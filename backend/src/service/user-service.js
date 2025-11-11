@@ -1,6 +1,6 @@
 import { UserRepository } from "../repository/user-repository.js";
 
-let proxId = 1;
+let proxId = 3;
 
 class UserService{
 

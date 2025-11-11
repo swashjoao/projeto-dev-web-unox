@@ -1,0 +1,22 @@
+- Qual foi sua principal contribuição no trabalho?
+eu fiz toda a logica das tarefas (controllers,repository e routes)
+
+- Quais partes do projeto você desenvolveu?
+No backEnd na parte dos controllers,repository e routes
+
+- Qual foi o trecho mais complicado do código? Explique o motivo.
+fazer o repository e o controller funcionarem, eles estavam dando problema por conta que eu estava eu tinha copiado umas coisas erradas entre eles
+
+- Qual foi sua maior dificuldade técnica e como resolveu?
+fazer o codigo funcionar, como dito anteriormente foi um problema que dava entre o con controller e o repositorie que um tentava puxar coisas que nao existiam, que eu tinha escrito errado. resolvi com a ajuda do copilot
+
+- Você utilizou IA (como ChatGPT, Copilot, etc.) em alguma parte? Se sim,
+explique exatamente como (ex: para revisar código, gerar exemplos, esclarecer
+dúvidas, etc.).
+eu usei o copilot para resolver um problema do controller e do repository que eles estavam buscando por funções que estavam escritas erradas ai davam problemas
+
+- O que você aprendeu de novo com este trabalho?
+o jeito correto de se criar um site.
+
+- Se tivesse mais tempo, o que melhoraria no projeto?
+FrontEnd

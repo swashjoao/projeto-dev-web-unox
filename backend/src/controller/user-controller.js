@@ -32,6 +32,19 @@ class UserController {
         } else {
             res.status(401).json({message: "Usuário não encontrado"});
         }
+   }
+
+    logout(req, res){
+        if (req.session && req.session.usuarioLogado) {
+            req.session.destroy((err) => {
+                if (err) {
+                    return res.status(500).json({ message: "Erro ao fazer logout" });
+                }
+                res.json({ message: "Logout realizado com sucesso" });
+            });
+        } else {
+            res.status(400).json({ message: "Usuário não estava logado" });
+        }
     }
 };
 

@@ -1,5 +1,6 @@
 let userList = [
-    { id: 1, nome: "teste", email: "teste@email.com", role: "user" }
+    { id: 1, nome: "Admin", email: "admin@sistema.com", role: "admin" },
+    { id: 2, nome: "teste", email: "teste@email.com", role: "user" }
 ];
 
 class UserRepository{
