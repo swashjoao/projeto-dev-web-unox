@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import {useCallback, useState} from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Box, CssBaseline } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -24,6 +24,20 @@ const PublicRoute = ({ children }) => {
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
+    const [tasks, setTasks] = useState([]);
+
+
+    const handleTaskUpdated = useCallback((updatedTask, isNew = false) => {
+        if (isNew) {
+            setTasks(prevTasks => [...prevTasks, updatedTask]);
+        } else {
+            setTasks(prevTasks =>
+                prevTasks.map(task =>
+                    task.id === updatedTask.id ? updatedTask : task
+                )
+            );
+        }
+    }, []);
 
   const theme = createTheme({
     palette: {
@@ -42,19 +56,48 @@ function App() {
       <CssBaseline />
       <AuthProvider>
         <Routes>
-          <Route 
-            path="/" 
-            element={
-              <PrivateRoute>
-                <Layout darkMode={darkMode} setDarkMode={setDarkMode} />
-              </PrivateRoute>
-            }
-          >
-            <Route index element={<TaskList />} />
-            <Route path="tasks" element={<TaskList />} />
-            <Route path="tasks/new" element={<NewTaskPage />} />
-            <Route path="categories" element={<Categories />} />
-          </Route>
+            <Route
+                path="/"
+                element={
+                    <PrivateRoute>
+                        <Layout darkMode={darkMode} setDarkMode={setDarkMode} />
+                    </PrivateRoute>
+                }
+            >
+                <Route
+                    index
+                    element={
+                        <TaskList
+                            tasks={tasks}
+                            setTasks={setTasks}
+                            onTaskUpdated={handleTaskUpdated}
+                        />
+                    }
+                />
+                <Route
+                    path="tasks"
+                    element={
+                        <TaskList
+                            tasks={tasks}
+                            setTasks={setTasks}
+                            onTaskUpdated={handleTaskUpdated}
+                        />
+                    }
+                />
+                <Route
+                    path="tasks/new"
+                    element={
+                        <NewTaskPage onTaskUpdated={handleTaskUpdated} />
+                    }
+                />
+                <Route
+                    path="tasks/edit/:id"
+                    element={
+                        <NewTaskPage editMode={true} onTaskUpdated={handleTaskUpdated} />
+                    }
+                />
+                <Route path="categories" element={<Categories />} />
+            </Route>
           
           <Route 
             path="/login" 

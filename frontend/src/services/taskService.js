@@ -1,70 +1,86 @@
-import api from './api';
-
+// src/services/taskService.js
 const TASKS_STORAGE_KEY = 'tarefas';
+
+function loadTasks() {
+    try {
+        const stored = localStorage.getItem(TASKS_STORAGE_KEY);
+        return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+        console.error('Erro ao ler tarefas do localStorage:', error);
+        return [];
+    }
+}
+
+function saveTasks(tasks) {
+    try {
+        localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
+    } catch (error) {
+        console.error('Erro ao salvar tarefas no localStorage:', error);
+    }
+}
 
 const taskService = {
     async getAll() {
-        try {
-            // Tenta buscar do localStorage
-            const tasks = JSON.parse(localStorage.getItem(TASKS_STORAGE_KEY)) || [];
-            return tasks;
-        } catch (error) {
-            console.error('Erro ao carregar tarefas do localStorage:', error);
-            return [];
+        return loadTasks();
+    },
+
+    async getTaskById(id) {
+        const tasks = loadTasks();
+        const task = tasks.find((t) => t.id === String(id));
+
+        if (!task) {
+            throw new Error('Tarefa não encontrada');
         }
+
+        return task;
     },
 
     async create(taskData) {
-        try {
-            const tasks = await this.getAll();
-            const newTask = {
-                id: Date.now().toString(), // Gera um ID único
-                ...taskData,
-                concluida: false // Valor padrão
-            };
+        const tasks = loadTasks();
 
-            tasks.push(newTask);
-            localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
-            return newTask;
-        } catch (error) {
-            console.error('Erro ao criar tarefa:', error);
-            throw error;
-        }
+        const newTask = {
+            id: Date.now().toString(),
+            concluida: false,
+            ...taskData,
+        };
+
+        tasks.push(newTask);
+        saveTasks(tasks);
+
+        return newTask;
     },
 
     async update(id, taskData) {
-        try {
-            let tasks = await this.getAll();
-            const taskIndex = tasks.findIndex(t => t.id === id);
+        const tasks = loadTasks();
+        const index = tasks.findIndex((t) => t.id === String(id));
 
-            if (taskIndex === -1) {
-                throw new Error('Tarefa não encontrada');
-            }
-
-            tasks[taskIndex] = { ...tasks[taskIndex], ...taskData };
-            localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
-            return tasks[taskIndex];
-        } catch (error) {
-            console.error('Erro ao atualizar tarefa:', error);
-            throw error;
+        if (index === -1) {
+            throw new Error('Tarefa não encontrada');
         }
-    },
 
-    async delete(id) {
-        try {
-            let tasks = await this.getAll();
-            tasks = tasks.filter(t => t.id !== id);
-            localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
-            return id;
-        } catch (error) {
-            console.error('Erro ao deletar tarefa:', error);
-            throw error;
-        }
+        const updated = {
+            ...tasks[index],
+            ...taskData,
+        };
+
+        tasks[index] = updated;
+        saveTasks(tasks);
+
+        return updated;
     },
 
     async toggleComplete(id, completed) {
         return this.update(id, { concluida: completed });
-    }
+    },
+
+    async deleteTask(id) {
+        const tasks = loadTasks();
+        const filtered = tasks.filter((t) => t.id !== String(id));
+
+        saveTasks(filtered);
+
+        return id;
+    },
 };
 
 export default taskService;

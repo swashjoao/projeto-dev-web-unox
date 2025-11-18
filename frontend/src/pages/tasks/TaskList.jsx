@@ -13,22 +13,26 @@ import {
     MenuItem,
     useTheme,
 } from '@mui/material';
-import { Add as AddIcon, FilterList as FilterListIcon, Search as SearchIcon } from '@mui/icons-material';
+import {
+    Add as AddIcon,
+    FilterList as FilterListIcon,
+    Search as SearchIcon,
+} from '@mui/icons-material';
 import TaskListItems from './components/TaskListItems';
 import DeleteTaskDialog from './components/DeleteTaskDialog.jsx';
-import taskService from '../../../services/taskService';
+import taskService from '../../services/taskService';
 
-const TaskList = () => {
-    const theme = useTheme();
-    const navigate = useNavigate();
-
-    const [tasks, setTasks] = useState([]);
+const TaskList = ({ tasks, setTasks, onTaskUpdated }) => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [taskToDelete, setTaskToDelete] = useState(null);
+    const [error, setError] = useState(null);
+    const theme = useTheme();
+    const navigate = useNavigate();
 
+    // Carrega as tarefas do localStorage na montagem
     useEffect(() => {
         const fetchTasks = async () => {
             try {
@@ -44,13 +48,18 @@ const TaskList = () => {
         };
 
         fetchTasks();
-    }, []);
+    }, [setTasks]);
 
-    const filteredTasks = tasks.filter(task => {
-        const matchesSearch = task.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            task.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
+    // Aplica filtro em cima de tasks do pai
+    const filteredTasks = (tasks || []).filter((task) => {
+        const term = searchTerm.toLowerCase();
 
-        const matchesStatus = filterStatus === 'all' ||
+        const matchesSearch =
+            task.titulo?.toLowerCase().includes(term) ||
+            task.descricao?.toLowerCase().includes(term);
+
+        const matchesStatus =
+            filterStatus === 'all' ||
             (filterStatus === 'completed' && task.concluida) ||
             (filterStatus === 'pending' && !task.concluida);
 
@@ -71,7 +80,12 @@ const TaskList = () => {
 
         try {
             await taskService.deleteTask(taskToDelete.id);
-            setTasks(tasks.filter(task => task.id !== taskToDelete.id));
+
+            // Atualiza estado do pai
+            setTasks((prevTasks) =>
+                prevTasks.filter((task) => task.id !== taskToDelete.id),
+            );
+
             setDeleteDialogOpen(false);
             setTaskToDelete(null);
         } catch (error) {
@@ -79,7 +93,25 @@ const TaskList = () => {
         }
     };
 
-    if (loading) {
+    const handleEditTask = (taskId) => {
+        navigate(`/tasks/edit/${taskId}`);
+    };
+
+    const handleToggleComplete = async (taskId, completed) => {
+        try {
+            await taskService.toggleComplete(taskId, completed);
+
+            setTasks((prevTasks) =>
+                prevTasks.map((task) =>
+                    task.id === taskId ? { ...task, concluida: completed } : task,
+                ),
+            );
+        } catch (error) {
+            console.error('Erro ao atualizar status da tarefa:', error);
+        }
+    };
+
+    if (loading && (!tasks || tasks.length === 0)) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                 <CircularProgress />
@@ -90,7 +122,14 @@ const TaskList = () => {
     return (
         <Container maxWidth="lg">
             <Box sx={{ mb: 4 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        mb: 3,
+                    }}
+                >
                     <Typography variant="h4" component="h1">
                         Minhas Tarefas
                     </Typography>
@@ -104,7 +143,15 @@ const TaskList = () => {
                     </Button>
                 </Box>
 
-                <Paper sx={{ p: 2, mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Paper
+                    sx={{
+                        p: 2,
+                        mb: 3,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2,
+                    }}
+                >
                     <Box sx={{ flexGrow: 1, maxWidth: 400 }}>
                         <TextField
                             fullWidth
@@ -113,7 +160,9 @@ const TaskList = () => {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             InputProps={{
-                                startAdornment: <SearchIcon sx={{ color: 'action.active', mr: 1 }} />,
+                                startAdornment: (
+                                    <SearchIcon sx={{ color: 'action.active', mr: 1 }} />
+                                ),
                             }}
                         />
                     </Box>
@@ -123,7 +172,9 @@ const TaskList = () => {
                                 value={filterStatus}
                                 onChange={(e) => setFilterStatus(e.target.value)}
                                 startAdornment={
-                                    <FilterListIcon sx={{ color: 'action.active', mr: 1 }} />
+                                    <FilterListIcon
+                                        sx={{ color: 'action.active', mr: 1 }}
+                                    />
                                 }
                             >
                                 <MenuItem value="all">Todas as tarefas</MenuItem>
@@ -136,6 +187,8 @@ const TaskList = () => {
 
                 <TaskListItems
                     tasks={filteredTasks}
+                    onToggleComplete={handleToggleComplete}
+                    onEdit={handleEditTask}
                     onDeleteClick={handleDeleteClick}
                 />
 
